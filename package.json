@@ -1,0 +1,12 @@
+{
+  "name": "daikoku-demo-values-api",
+  "version": "1.0.0",
+  "description": "demo api for daikoku/otoroshi",
+  "main": "index.js",
+  "repository": "git@github.com:MAIFX/daikoku-demo-values-api.git",
+  "author": "Quentin <quentin.aubert@maif.fr>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
