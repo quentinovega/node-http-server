@@ -1,0 +1,47 @@
+<style>
+  .warning { background-color: #FFE569; color: #B70404; margin-top: 15px; text-align: center; padding: 5px; border-radius: 5px;}
+  .methods ul {
+    list-style: none;
+  }
+  h1 {
+    text-align: center;
+  }
+  h2 {
+    color: #025464;
+    text-decoration: underline;
+  }
+
+</style>
+<div>
+  <h1>Les utilisateurs</h1>
+  <div>
+    <h2>les methodes</h2>
+    <div className="methods">
+      <ul>
+        <li>GET</li>
+        <li>POST</li>
+        <li>PUT</li>
+        <li>DELETE</li>
+      </ul>
+
+      <div>
+        attention: pensez a ajouter votre cle d'API a votre appel :
+        <code>
+          curl -X GET http://users.oto.tools/users -u <client-id>:<client-secret>
+        </code>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h2>les données</h2>
+    <div>
+      <div>un utilisateur</div>
+      <code>
+        {id: string, nom: string, prenom: string, pays: string, email: string}
+      </code>
+    </div>
+  </div>
+  <div class="warning">
+    si vous n'etes pas authorisé a récuperé un utilisateur entier, certain champs seront absent de la réponse
+  </div>
+</div>
