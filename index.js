@@ -28,36 +28,12 @@ const uuidv4 = () => {
 }
 
 
-
-function generateData(nbr) {
-  const items = [];
-  for (let i = 0; i < nbr; i++) {
-    items.push(Math.floor((Math.random() * 100) + 100));
-  }
-  return items;
-}
-
-const datas = {
-  'test': [1, 2, 3, 4, 5],
-  'dev': generateData(5),
-  'preprod': generateData(10),
-  'prod': generateData(100),
-};
-
 const transformers = {
-  'external': data => ({ label: 'raw values for external caller', caller: 'external', env: env, values: data }),
-  'internal': data => ({ label: 'tuned values for internal caller', caller: 'internal', env: env, values: data.map(v => v + 100) }),
-  'none': _ => ({ error: 'unknown caller' }),
+  'external': ({id, nom, prenom, pays}) => ({id, nom, prenom, pays}),
+  'internal': ({id, nom, prenom, pays, email}) => ({id, nom, prenom, pays, email}),
+  'none': ({id, nom, prenom, pays}) => ({id, nom, prenom, pays}),
 };
 
-const requestHandler = (request, response) => {
-  const caller = request.headers['X-Caller-Key'] || request.headers['x-caller-key'] || 'none';
-  const data = datas[env] || [];
-  const transformer = transformers[caller] || ((data) => ({ error: `bad caller ${caller}` }));
-  response.writeHead(200, { 'Content-Type': 'application/json', 'X-Caller-Was': caller });
-  response.write(JSON.stringify(transformer(data)));
-  response.end();
-};
 const healthHandler = (_, response) => {
   response.writeHead(200, { 'Content-Type': 'application/json' });
   response.write(JSON.stringify({ health: 'ok' }));
@@ -65,8 +41,13 @@ const healthHandler = (_, response) => {
 };
 
 const userHandler = (request, response, param) => {
-  const users = fsReadFileSyncToArray(databasePath)
+  const data = fsReadFileSyncToArray(databasePath)
   const method = request.method
+
+  const caller = request.headers['X-Caller-Key'] || request.headers['x-caller-key'] || 'none';
+  const transformer = transformers[caller]
+
+  const users = data.map(transformer).splice(0, env === 'prod' ? data.length : 10)
 
 
   switch (method) {
@@ -99,7 +80,7 @@ const userHandler = (request, response, param) => {
 
         const user = JSON.parse(body)
 
-        if (!user.prenom || !user.nom || !user.pays || !user.telephone) {
+        if (!user.prenom || !user.nom || !user.pays || !user.email) {
           response.writeHead(422, { 'Content-Type': 'application/json' });
           response.write(JSON.stringify({ "error": "wrong user format" }));
           response.end();
@@ -129,7 +110,7 @@ const userHandler = (request, response, param) => {
           response.writeHead(404, { 'Content-Type': 'application/json' });
           response.write(JSON.stringify({ "error": "user not found" }));
           response.end();
-        } else if (!user.prenom || !user.nom || !user.pays || !user.telephone || !user.id) {
+        } else if (!user.prenom || !user.nom || !user.pays || !user.email || !user.id) {
           response.writeHead(422, { 'Content-Type': 'application/json' });
           response.write(JSON.stringify({ "error": "wrong user format" }));
           response.end();
@@ -162,7 +143,6 @@ const userHandler = (request, response, param) => {
 }
 
 const routes = {
-  '': requestHandler,
   'health': healthHandler,
   'users': userHandler
 }
